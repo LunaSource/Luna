@@ -8,7 +8,6 @@
 [![Stars](https://img.shields.io/github/stars/LunaSource/Luna?style=for-the-badge&logo=github&label=Stars&color=yellow)](https://star-history.com/#LunaSource/Luna&Date)
 
 
-![Bar](./assets/img/bar.png)
 </div>
 
 
@@ -82,4 +81,5 @@ We welcome bug reports, feature requests, and pull requests! Please check our do
 *Streamlining your commit workflow, one AI-generated message at a time!*
 
 </div>
+
 
