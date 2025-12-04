@@ -24,13 +24,13 @@ func main() {
 		switch larg {
 		case "-e":
 			includeEmoji = true
-		case "-lc", "lc", "lunacommit":
+		case "commit", "c":
 			cmd = "commit"
-		case "-lh", "lh", "lunahelp":
+		case "help", "h":
 			cmd = "help"
-		case "-lk", "lkey", "lunaapikey":
+		case "apikey", "k":
 			cmd = "apikey"
-		case "-config", "config", "lunaconfig":
+		case "config", "cfg":
 			cmd = "config"
 		}
 	}
@@ -45,23 +45,21 @@ func main() {
 	case "config":
 		manageConfig()
 	default:
-		fmt.Println("Unknown command. Use: LunaHelp")
+		fmt.Println("Unknown command. Use: luna help")
 	}
 }
 
 func runCommitGenerator(includeEmoji bool) {
 	cfg := config.LoadConfig()
-	
+
 	if !includeEmoji {
 		includeEmoji = cfg.DefaultEmoji
 	}
 
 	if cfg.ApiKey == "" {
-		fmt.Println("Error: Set API key using LunaApikey first")
-		fmt.Println("Use: lunaapikey YOUR_API_KEY")
+		fmt.Println("Error: Set API key using 'luna apikey' first")
 		return
 	}
-
 
 	p := tea.NewProgram(ui.InitializeCommitUI(cfg, includeEmoji))
 	if _, err := p.Run(); err != nil {
@@ -72,7 +70,7 @@ func runCommitGenerator(includeEmoji bool) {
 
 func setApiKey() {
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: LunaApikey YOUR_API_KEY")
+		fmt.Println("Usage: luna apikey YOUR_API_KEY")
 		return
 	}
 
@@ -97,6 +95,10 @@ func manageConfig() {
 }
 
 func showUsage() {
-	fmt.Println("Use: LunaHelp to see available commands")
-	fmt.Println("Available commands: lunahelp, lunacommit, lunaapikey, lunaconfig")
+	fmt.Println("Use: luna help to see available commands")
+	fmt.Println("Available commands with aliases:")
+	fmt.Println("help (h)")
+	fmt.Println("commit (c)")
+	fmt.Println("apikey (k)")
+	fmt.Println("config (cfg)")
 }
