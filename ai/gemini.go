@@ -38,8 +38,7 @@ func CallGemini(apiKey, diff string) string {
 				Parts: []Part{
 					{Text: fmt.Sprintf(
 						"Generate a highly polished, professional, one-line commit message following GitHub's Conventional Commit specification. "+
-							"Use ONLY these allowed types: feat, fix, chore, refactor, docs, test, perf, ci, build, style.\n"+
-							"Format the commit exactly as: prefix(scope): message, where scope is optional.\n"+
+							"Use ONLY these allowed types: feat:, fix:, chore:, refactor:, docs:, test:, perf:, ci:, build:, style:. "+
 							"The message must:\n"+
 							"- Be under 60 characters\n"+
 							"- Be crystal clear and specific\n"+
