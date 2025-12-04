@@ -25,16 +25,14 @@ var (
 	colorText      = lipgloss.Color("#d8d8d8")
 
 	titleStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(colorAccent).
-			Background(colorSecondary).
-			Padding(0, 2)
+		Bold(true).
+		Foreground(colorAccent).
+		Background(colorSecondary).
+		Padding(0, 2)
 
-	boxStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(colorSecondary).
-			Padding(1, 2).
-			Margin(1)
+	boxStyle = lipgloss.NewStyle(). // sem borda
+		Padding(1, 2).
+		Margin(1)
 
 	statusSuccess = lipgloss.NewStyle().Foreground(colorSuccess)
 	statusError   = lipgloss.NewStyle().Foreground(colorError)
@@ -42,22 +40,13 @@ var (
 	statusInfo    = lipgloss.NewStyle().Foreground(colorAccent)
 
 	asciiArt = `
-░██                                             ████████████            
-░██                                             ██          ████        
-░██         ░██    ░██ ░████████   ░██████        ██            ██      
-░██         ░██    ░██ ░██    ░██       ░██        ██            ██    
-░██         ░██    ░██ ░██    ░██  ░███████         ██            ██  
-░██         ░██   ░███ ░██    ░██ ░██   ░██         ██  ██  ██    ██  
-░██████████  ░█████░██ ░██    ░██  ░█████░██       ██  ██  ██     ██
-                                                  ██  ██  ██      ██
-                                                ██                ██
-                                            ████  ██        ██    ██
-                                      ██████      ██      ██    ██  
-                                      ██            ██████      ██  
-                                        ██                    ██    
-                                          ██                ██      
-                                            ████        ████        
-                                                ████████            
+██╗     ██╗   ██╗███╗   ██╗ █████╗ 
+██║     ██║   ██║████╗  ██║██╔══██╗
+██║     ██║   ██║██╔██╗ ██║███████║
+██║     ██║   ██║██║╚██╗██║██╔══██║
+███████╗╚██████╔╝██║ ╚████║██║  ██║
+╚══════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝
+                                   
 `
 )
 
@@ -158,9 +147,6 @@ func (m CommitUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			m.commitResults[msg.filename] = msg.result
 		}
-
-		m.commitMsgs[msg.filename] = m.commitMsgs[msg.filename]
-
 		m.state = stateReview
 		return m, nil
 	}
@@ -209,7 +195,7 @@ func (m CommitUI) View() string {
 	var b strings.Builder
 
 	now := time.Now().Format("15:04:05")
-	header := titleStyle.Render(" Luna Commits  •  " + now)
+	header := titleStyle.Render(" Luna - " + now)
 
 	switch m.state {
 
@@ -225,7 +211,6 @@ func (m CommitUI) View() string {
 			m.progress.ViewAs(progressVal),
 			lipgloss.NewStyle().Foreground(colorAccent).Render(m.files[m.currentFile]),
 		)
-
 		b.WriteString(header + "\n")
 		b.WriteString(boxStyle.Render(box))
 
