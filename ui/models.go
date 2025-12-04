@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/spinner"
@@ -14,20 +15,51 @@ import (
 	"luna/git"
 )
 
-type CommitUI struct {
-	cfg           config.Config
-	includeEmoji  bool
-	files         []string
-	currentFile   int
-	commitIndex   int
-	commitMsgs    map[string]string
-	commitResults map[string]string
-	spinner       spinner.Model
-	progress      progress.Model
-	viewport      viewport.Model
-	state         uiState
-	err           error
-}
+var (
+	colorPrimary   = lipgloss.Color("#9d4edd")
+	colorSecondary = lipgloss.Color("#5a189a")
+	colorAccent    = lipgloss.Color("#00f5d4")
+	colorSuccess   = lipgloss.Color("#80ed99")
+	colorError     = lipgloss.Color("#ff4d6d")
+	colorWarning   = lipgloss.Color("#f9c74f")
+	colorText      = lipgloss.Color("#d8d8d8")
+
+	titleStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(colorAccent).
+			Background(colorSecondary).
+			Padding(0, 2)
+
+	boxStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(colorSecondary).
+			Padding(1, 2).
+			Margin(1)
+
+	statusSuccess = lipgloss.NewStyle().Foreground(colorSuccess)
+	statusError   = lipgloss.NewStyle().Foreground(colorError)
+	statusWarning = lipgloss.NewStyle().Foreground(colorWarning)
+	statusInfo    = lipgloss.NewStyle().Foreground(colorAccent)
+
+	asciiArt = `
+░██                                             ████████████            
+░██                                             ██          ████        
+░██         ░██    ░██ ░████████   ░██████        ██            ██      
+░██         ░██    ░██ ░██    ░██       ░██        ██            ██    
+░██         ░██    ░██ ░██    ░██  ░███████         ██            ██  
+░██         ░██   ░███ ░██    ░██ ░██   ░██         ██  ██  ██    ██  
+░██████████  ░█████░██ ░██    ░██  ░█████░██       ██  ██  ██     ██
+                                                  ██  ██  ██      ██
+                                                ██                ██
+                                            ████  ██        ██    ██
+                                      ██████      ██      ██    ██  
+                                      ██            ██████      ██  
+                                        ██                    ██    
+                                          ██                ██      
+                                            ████        ████        
+                                                ████████            
+`
+)
 
 type uiState int
 
@@ -38,6 +70,20 @@ const (
 	stateComplete
 	stateError
 )
+
+type CommitUI struct {
+	cfg           config.Config
+	includeEmoji  bool
+	files         []string
+	currentFile   int
+	commitMsgs    map[string]string
+	commitResults map[string]string
+	spinner       spinner.Model
+	progress      progress.Model
+	viewport      viewport.Model
+	state         uiState
+	err           error
+}
 
 type fileProcessedMsg struct {
 	filename string
@@ -52,10 +98,14 @@ type loadedFilesMsg struct {
 
 func InitializeCommitUI(cfg config.Config, includeEmoji bool) CommitUI {
 	sp := spinner.New()
-	sp.Spinner = spinner.Dot
-	sp.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	sp.Spinner = spinner.Points
+	sp.Style = lipgloss.NewStyle().Foreground(colorAccent)
 
-	prog := progress.New(progress.WithDefaultGradient())
+	prog := progress.New(
+		progress.WithSolidFill(string(colorPrimary)),
+		progress.WithGradient("#7209b7", "#4361ee"),
+	)
+
 	vp := viewport.New(80, 20)
 
 	return CommitUI{
@@ -79,11 +129,12 @@ func (m CommitUI) Init() tea.Cmd {
 
 func (m CommitUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+
 	case tea.KeyMsg:
 		if msg.Type == tea.KeyCtrlC {
 			return m, tea.Quit
 		}
-		if m.state == stateReview || m.state == stateComplete {
+		if m.state == stateReview {
 			return handleReviewInput(m, msg)
 		}
 
@@ -107,13 +158,11 @@ func (m CommitUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			m.commitResults[msg.filename] = msg.result
 		}
-		m.currentFile++
 
-		if m.currentFile >= len(m.files) {
-			m.state = stateReview
-			return m, nil
-		}
-		return m, processNextFile(m)
+		m.commitMsgs[msg.filename] = m.commitMsgs[msg.filename]
+
+		m.state = stateReview
+		return m, nil
 	}
 
 	var cmd tea.Cmd
@@ -138,7 +187,14 @@ func processNextFile(m CommitUI) tea.Cmd {
 			return fileProcessedMsg{filename: file, result: "", err: err}
 		}
 
-		commitMsg := git.GenerateCommitMessage(m.cfg.ApiKey, diff, file, m.cfg, m.includeEmoji)
+		commitMsg := git.GenerateCommitMessage(
+			m.cfg.ApiKey,
+			diff,
+			file,
+			m.cfg,
+			m.includeEmoji,
+		)
+
 		m.commitMsgs[file] = commitMsg
 
 		return fileProcessedMsg{
@@ -152,41 +208,56 @@ func processNextFile(m CommitUI) tea.Cmd {
 func (m CommitUI) View() string {
 	var b strings.Builder
 
+	now := time.Now().Format("15:04:05")
+	header := titleStyle.Render(" Luna Commits  •  " + now)
+
 	switch m.state {
+
 	case stateLoading:
-		b.WriteString(fmt.Sprintf("%s Loading files...\n", m.spinner.View()))
+		b.WriteString(header + "\n")
+		b.WriteString(boxStyle.Render(m.spinner.View() + " Loading files..."))
 
 	case stateProcessing:
 		progressVal := float64(m.currentFile) / float64(len(m.files))
-		b.WriteString(fmt.Sprintf("%s Processing files...\n", m.spinner.View()))
-		b.WriteString(fmt.Sprintf("Progress: %s\n", m.progress.ViewAs(progressVal)))
+		box := fmt.Sprintf(
+			"%s Processing...\n\nProgress:\n%s\n\nCurrent file:\n%s",
+			m.spinner.View(),
+			m.progress.ViewAs(progressVal),
+			lipgloss.NewStyle().Foreground(colorAccent).Render(m.files[m.currentFile]),
+		)
 
-		if m.currentFile < len(m.files) {
-			b.WriteString(fmt.Sprintf("Current: %s\n", m.files[m.currentFile]))
-		}
+		b.WriteString(header + "\n")
+		b.WriteString(boxStyle.Render(box))
 
 	case stateReview:
-		b.WriteString("🛈 Review Commit Messages:\n\n")
-		for _, file := range m.files {
-			msg := m.commitMsgs[file]
-			result := m.commitResults[file]
+		file := m.files[m.currentFile]
+		msg := m.commitMsgs[file]
+		result := m.commitResults[file]
 
-			status := "✓"
-			if strings.Contains(result, "Error") {
-				status = "✗"
-			}
-
-			b.WriteString(fmt.Sprintf("%s %s: %s\n", status, file, msg))
-			b.WriteString(fmt.Sprintf("   Result: %s\n\n", result))
+		icon := statusSuccess.Render("✓")
+		if strings.Contains(result, "Error") {
+			icon = statusError.Render("✗")
 		}
-		b.WriteString("Press 'c' to confirm, 'r' to retry, 'q' to quit\n")
+
+		body := fmt.Sprintf(
+			"%s\n%s\n\nFile: %s\n\nCommit message:\n%s\n\nStatus: %s\n\n[c] Confirm   [r] Retry   [q] Quit",
+			asciiArt,
+			titleStyle.Render("Repository: github.com/LunaSource/Luna"),
+			lipgloss.NewStyle().Bold(true).Foreground(colorAccent).Render(file),
+			msg,
+			icon+" "+result,
+		)
+
+		b.WriteString(header + "\n")
+		b.WriteString(boxStyle.Render(body))
 
 	case stateComplete:
-		b.WriteString("◆ All files committed successfully!\n")
-		b.WriteString("Exiting in 2 seconds...\n")
+		b.WriteString(header + "\n")
+		b.WriteString(statusSuccess.Render("All commits completed."))
 
 	case stateError:
-		b.WriteString(fmt.Sprintf("❌ Error: %v\n", m.err))
+		b.WriteString(header + "\n")
+		b.WriteString(statusError.Render(fmt.Sprintf("Error: %v", m.err)))
 	}
 
 	return b.String()
