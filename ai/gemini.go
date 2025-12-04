@@ -37,8 +37,19 @@ func CallGemini(apiKey, diff string) string {
 			{
 				Parts: []Part{
 					{Text: fmt.Sprintf(
-						"Generate a short, concise, one-line commit message for the following diff. " +
-							"Keep it under 60 characters and include type like chore:, refactor:, feat:, fix:, docs:, test:\n%s", diff)},
+						"Generate a highly polished, professional, one-line commit message following GitHub's Conventional Commit specification. "+
+							"Use ONLY these allowed types: feat, fix, chore, refactor, docs, test, perf, ci, build, style.\n"+
+							"Format the commit exactly as: prefix(scope): message, where scope is optional.\n"+
+							"The message must:\n"+
+							"- Be under 60 characters\n"+
+							"- Be crystal clear and specific\n"+
+							"- Use active voice and descriptive wording\n"+
+							"- Never include trailing punctuation\n"+
+							"- Never include quotes or extra commentary\n"+
+							"- Precisely summarize the intent of the diff, not its details\n"+
+							"Here is the diff:\n%s",
+						diff,
+					)},
 				},
 			},
 		},
