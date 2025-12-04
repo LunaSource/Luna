@@ -21,7 +21,7 @@
 
 1. **📥 Install**: Download `bin/Luna.exe` and add to your system PATH
 2. **🔑 Setup**: Run `LunaApikey YOUR_GEMINI_API_KEY` to configure your API key
-3. **✨ Use**: Execute `git add . && Luna -lc` to generate your first AI commit!
+3. **✨ Use**: Execute `git add . && Luna commit` to generate your first AI commit!
 
 ## 🛠️ Command Reference
 
@@ -30,10 +30,10 @@
 
 | Command | Description | Usage |
 |---------|-------------|--------|
-| `LunaHelp` | Display help information | `LunaHelp` |
-| `LunaCommit` | Generate commit messages | `LunaCommit -e` (with emojis) |
-| `LunaApikey` | Set Gemini API key | `LunaApikey YOUR_KEY` |
-| `LunaConfig` | Manage configuration | `LunaConfig` |
+| `help` | Display help information | `help` |
+| `commit` | Generate commit messages | `commit -e` (with emojis) |
+| `apikey` | Set Gemini API key | `apikey YOUR_KEY` |
+| `config` | Manage configuration | `config` |
 
 ## 🌟 Key Features
 
