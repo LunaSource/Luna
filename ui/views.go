@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"luna/git"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func ShowHelp() {
@@ -13,31 +14,31 @@ func ShowHelp() {
 	fmt.Println(`
 Available commands:
 
-  LunaHelp (lh, -lh)
-  -> Shows this help screen
+help (h)
+-> Shows this help screen
 
-  LunaCommit (lc, -lc)
-  -> Generates commit messages using Gemini AI
-  -> Use -e flag for emojis
+commit (c)
+-> Generates commit messages using Gemini AI
+-> Use -e flag for emojis
 
-  LunaApikey (lkey, -lkey)
-  -> Sets your Gemini API key
+apikey (k)
+-> Sets your Gemini API key
 
-  LunaConfig (config, -config)
-  -> Manage project configuration
+config (cfg)
+-> Manage project configuration
 `)
 }
 
 func ShowConfigHelp() {
 	fmt.Println(titleStyle.Render("Config Management"))
 	fmt.Println(`
-  luna config init    - Create project config
-  luna config show    - Show current config
-  luna config edit    - Edit project config
+luna config init - Create project config
+luna config show - Show current config
+luna config edit - Edit project config
 
 Config Priority:
-  • API Key: Global > Project > Default
-  • Other settings: Project > Default
+• API Key: Global > Project > Default
+ • Other settings: Project > Default
 `)
 }
 
