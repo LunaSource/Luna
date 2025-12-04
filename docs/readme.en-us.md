@@ -1,6 +1,6 @@
 # 🌙 Luna — AI Commit Generator
 
-Luna generates concise commit messages for your staged files using Google Gemini 2.0 Flash API.
+Luna generates concise commit messages for your using Google Gemini 2.0 Flash API.
 
 ## ✨ Features
 
@@ -29,7 +29,7 @@ Luna generates concise commit messages for your staged files using Google Gemini
 
 ### Option A — Use prebuilt binary (`bin/Luna.exe`)
 
-1. Copy `bin/Luna.exe` to a directory, e.g. `C:\Users\YourUser\Luna`
+1. Copy `bin/Luna.exe` to a directory, e.g. `C:\Users\user\Luna`
 2. Add that folder to system PATH:
    - Press `Win + R`, run `sysdm.cpl`, open "Environment Variables"
    - Edit `Path` variable → "New" → paste folder path
@@ -38,13 +38,13 @@ Luna generates concise commit messages for your staged files using Google Gemini
 ### Option B — Build from source (Go)
 
 ```bash
-go build -o ./bin/Luna.exe main.go
+$ go build -o ./bin/Luna.exe main.go
 ```
 
 Or use the helper script:
 
 ```bash
-./build.sh
+$ ./build.sh
 ```
 
 ## Configuration
@@ -69,7 +69,7 @@ Default settings (from code):
 ### Set your API key
 
 ```bash
-LunaApikey YOUR_GEMINI_KEY
+$ Luna apikey YOUR_GEMINI_KEY
 ```
 
 This saves the key in your global `.lunarc`. Reopen terminal after setting.
@@ -80,27 +80,26 @@ Run Luna inside a Git repository with staged changes.
 
 ### Commands and aliases
 
-- `LunaHelp` | `lh` | `-lh`: Show help
-- `LunaCommit` | `lc` | `-lc`: Generate and commit per-file messages
-- `LunaApikey <YOUR_KEY>` | `lkey <YOUR_KEY>` | `-lkey <YOUR_KEY>`: Set API key
-- `LunaConfig` | `config` | `-config` with subcommands:
+- `help` | `h`: Show help
+- `commit` | `c`: Generate and commit per-file messages
+- `apikey <YOUR_KEY>` | `k <YOUR_KEY>`: Set API key
+- `config` | `cfg` with subcommands:
   - `init`: Create `.lunacfg` in current directory
   - `show`: Print merged configuration
   - `edit`: Placeholder (not implemented yet)
 
-You can call them as executable arguments (e.g., `Luna -c`, `Luna lc`, `Luna -lh`) or directly as command names if your shell exposes them.
+
 
 ### Typical flow
 
 ```bash
-git add .
-Luna -c          # or: Luna lc, or: LunaCommit
+$ git add . && Luna commit # or Luna c
 ```
 
 ### Optional emojis
 
 ```bash
-Luna -lc -e       # enable emojis in messages
+$ Luna c -e       # enable emojis in messages
 ```
 
 ## Example output
@@ -125,7 +124,7 @@ Committed README.md with message:
 ## Troubleshooting
 
 - Error: `Set API key using LunaApikey first`
-  - Run `LunaApikey YOUR_KEY` and reopen terminal
+  - Run `Luna apikey YOUR_KEY` and reopen terminal
 - Error running Git commands
   - Ensure you're in a Git repository and Git is installed
 - No staged changes
