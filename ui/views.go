@@ -5,25 +5,7 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-
 	"luna/git"
-)
-
-var (
-	titleStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("63")).
-			Padding(1, 2)
-
-	successStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("42"))
-
-	errorStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("196"))
-
-	warningStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("214"))
 )
 
 func ShowHelp() {
@@ -66,30 +48,22 @@ func loadFiles() tea.Msg {
 
 func handleReviewInput(m CommitUI, msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
+
 	case "c":
-		if m.commitIndex >= len(m.files) {
-			m.state = stateComplete
-		
-			return m, func() tea.Msg {
-				time.Sleep(2 * time.Second)
-				return tea.QuitMsg{}
-			}
-		}
+		file := m.files[m.currentFile]
+		commitMsg := m.commitMsgs[file]
 
-		filename := m.files[m.commitIndex]
-		commitMsg := m.commitMsgs[filename]
-
-		out, err := git.CommitFile(filename, commitMsg)
+		out, err := git.CommitFile(file, commitMsg)
 		if err != nil {
 			m.state = stateError
 			m.err = err
 			return m, nil
 		}
 
-		m.commitResults[filename] = out
-		m.commitIndex++
+		m.commitResults[file] = out
+		m.currentFile++
 
-		if m.commitIndex >= len(m.files) {
+		if m.currentFile >= len(m.files) {
 			m.state = stateComplete
 			return m, func() tea.Msg {
 				time.Sleep(2 * time.Second)
@@ -97,24 +71,27 @@ func handleReviewInput(m CommitUI, msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		return m, nil
+		m.state = stateProcessing
+		return m, processNextFile(m)
 
 	case "r":
-		if m.currentFile >= len(m.files) {
-			return m, nil
-		}
-
-		filename := m.files[m.currentFile]
-		diff, err := git.GetFileDiff(filename)
+		file := m.files[m.currentFile]
+		diff, err := git.GetFileDiff(file)
 		if err != nil {
 			m.state = stateError
 			m.err = err
 			return m, nil
 		}
 
-		newMsg := git.GenerateCommitMessage(m.cfg.ApiKey, diff, filename, m.cfg, m.includeEmoji)
-		m.commitMsgs[filename] = newMsg
+		newMsg := git.GenerateCommitMessage(
+			m.cfg.ApiKey,
+			diff,
+			file,
+			m.cfg,
+			m.includeEmoji,
+		)
 
+		m.commitMsgs[file] = newMsg
 		return m, nil
 
 	case "q":
