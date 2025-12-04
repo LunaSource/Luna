@@ -62,7 +62,7 @@
 > **Easy Setup** - Get started in minutes:
 
 1. Obtain your Google Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Run `LunaApikey your_api_key_here` to set your credentials
+2. Run `Luna apikey your_api_key_here` to set your credentials
 3. Start generating intelligent commits immediately!
 
 ## 🤝 Contributing
