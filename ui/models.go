@@ -21,8 +21,8 @@ var (
 	colorAccent    = lipgloss.Color("#00f5d4")
 	colorSuccess   = lipgloss.Color("#80ed99")
 	colorError     = lipgloss.Color("#ff4d6d")
-	colorWarning   = lipgloss.Color("#f9c74f")
-	colorText      = lipgloss.Color("#d8d8d8")
+	// colorWarning   = lipgloss.Color("#f9c74f")
+	// colorText      = lipgloss.Color("#d8d8d8")
 
 	titleStyle = lipgloss.NewStyle().
 			Bold(true).
@@ -38,8 +38,8 @@ var (
 
 	statusSuccess = lipgloss.NewStyle().Foreground(colorSuccess)
 	statusError   = lipgloss.NewStyle().Foreground(colorError)
-	statusWarning = lipgloss.NewStyle().Foreground(colorWarning)
-	statusInfo    = lipgloss.NewStyle().Foreground(colorAccent)
+	// statusWarning = lipgloss.NewStyle().Foreground(colorWarning)
+	// statusInfo    = lipgloss.NewStyle().Foreground(colorAccent)
 
 	asciiArt = `
  ██▓     █    ██  ███▄    █  ▄▄▄      
