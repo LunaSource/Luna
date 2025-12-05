@@ -14,7 +14,7 @@ Luna generates concise commit messages for your using Google Gemini 2.0 Flash AP
 ## How it works
 
 1. Collects staged files via `git diff --cached --name-only`
-2. Sends each diff to `gemini-2.0-flash:generateContent`
+2. Sends each diff to Gemini
 3. If response lacks known prefix, randomly selects from: `chore:`, `refactor:`, `feat:`, `fix:`, `docs:`, `test:`, `etc..`
 4. If `-e` is active, adds random emoji
 5. Truncates to `maxCommitLength` and commits with `git commit -m <message> -- <file>`
