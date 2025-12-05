@@ -14,7 +14,7 @@ Luna gera mensagens de commit usando a API Google Gemini 2.0 Flash.
 ## Como funciona
 
 1. Coleta arquivos staged via `git diff --cached --name-only`
-2. Envia cada diff para `gemini-2.0-flash:generateContent`
+2. Envia cada diff para o Gemini
 3. Se a resposta não contiver prefixo conhecido, seleciona aleatoriamente de: `chore:`, `refactor:`, `feat:`, `fix:`, `docs:`, `test:`, etc.
 4. Se `-e` estiver ativo, adiciona emoji aleatório
 5. Trunca para `maxCommitLength` e realiza commit com `git commit -m <mensagem> -- <arquivo>`
