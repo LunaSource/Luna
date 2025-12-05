@@ -236,7 +236,7 @@ func createProjectConfig() {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		cfg := GetDefaultConfig()
 		if err := SaveProjectConfig(cfg); err != nil {
-			fmt.Printf("❌ Error creating .lunacfg: %v\n", err)
+			fmt.Printf("Error creating .lunacfg: %v\n", err)
 			return
 		}
 		fmt.Println("🗸 Created .lunacfg in current directory")
@@ -250,7 +250,7 @@ func createGlobalConfig() {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		cfg := GetDefaultConfig()
 		if err := SaveGlobalConfig(cfg); err != nil {
-			fmt.Printf("❌ Error creating .lunarc: %v\n", err)
+			fmt.Printf("Error creating .lunarc: %v\n", err)
 			return
 		}
 		fmt.Println("🗸 Created .lunarc in home directory")
