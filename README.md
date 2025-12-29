@@ -54,8 +54,6 @@
 - 🇧🇷 **[Português (PT-BR)](docs/readme.pt-br.md)** - Documentação em Português
 - 🇺🇸 **[English (EN-US)](docs/readme.en-us.md)** - English Documentation
 
-## 🎯 Usage Examples
-
 ## 🔧 Configuration
 
 > [!IMPORTANT]
@@ -81,5 +79,6 @@ We welcome bug reports, feature requests, and pull requests! Please check our do
 *Streamlining your commit workflow, one AI-generated message at a time!*
 
 </div>
+
 
 
