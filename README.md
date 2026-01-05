@@ -1,5 +1,5 @@
 <div align="center">
-<h3>Luna — AI Commit Message Generator</h3>
+<h3>Luna — AI Commit Message Generator (v1.4 Soon)</h3>
   
 ![Go](https://img.shields.io/badge/Made%20with-Go-00ADD8?logo=go&logoColor=white&style=for-the-badge)
 ![Open Source](https://img.shields.io/badge/Open%20Source-Yes-brightgreen?style=for-the-badge&logo=github)
@@ -9,7 +9,6 @@
 
 
 </div>
-
 
 > [!IMPORTANT]
 > **Professional Git Commit Automation** - Luna generates intelligent, context-aware commit messages for your staged files using Google's Gemini 2.0 Flash AI model.
@@ -79,6 +78,7 @@ We welcome bug reports, feature requests, and pull requests! Please check our do
 *Streamlining your commit workflow, one AI-generated message at a time!*
 
 </div>
+
 
 
 
