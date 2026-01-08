@@ -5,7 +5,6 @@
 ![Open Source](https://img.shields.io/badge/Open%20Source-Yes-brightgreen?style=for-the-badge&logo=github)
 ![Version](https://img.shields.io/badge/Version-1.3_Beta-orange?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-blue?style=for-the-badge)
-[![Stars](https://img.shields.io/github/stars/LunaSource/Luna?style=for-the-badge&logo=github&label=Stars&color=yellow)](https://star-history.com/#LunaSource/Luna&Date)
 
 </div>
 
@@ -77,3 +76,4 @@ We welcome bug reports, feature requests, and pull requests! Please check our do
 *Streamlining your commit workflow, one AI-generated message at a time!*
 
 </div>
+
