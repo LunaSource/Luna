@@ -8,8 +8,6 @@
 
 </div>
 
-> [!IMPORTANT]
-> **Professional Git Commit Automation** - Luna generates intelligent, context-aware commit messages for your staged files using Google's Gemini 2.0 Flash AI model.
 
 ## Quick Start Guide
 
