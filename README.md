@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/LunaSource/Luna/main/assets/img/banner.png" alt="Luna" />
+  <img src="https://raw.githubusercontent.com/LunaSource/Luna/main/assets/img/banner2.png" alt="Luna" />
 
   <br><br>
 
@@ -75,6 +75,7 @@ We welcome bug reports, feature requests, and pull requests! Please check our do
 *Streamlining your commit workflow, one AI-generated message at a time!*
 
 </div>
+
 
 
 
