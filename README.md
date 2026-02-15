@@ -1,11 +1,12 @@
 <div align="center">
-![Luna](https://raw.githubusercontent.com/LunaSource/Luna/main/assets/img/banner.png)
-  
-![Go](https://img.shields.io/badge/Made%20with-Go-00ADD8?logo=go&logoColor=white&style=for-the-badge)
-![Open Source](https://img.shields.io/badge/Open%20Source-Yes-brightgreen?style=for-the-badge&logo=github)
-![Version](https://img.shields.io/badge/Version-1.3_Beta-orange?style=for-the-badge)
-![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-blue?style=for-the-badge)
+  <img src="https://raw.githubusercontent.com/LunaSource/Luna/main/assets/img/banner.png" alt="Luna" />
 
+  <br><br>
+
+  <img src="https://img.shields.io/badge/Made%20with-Go-00ADD8?logo=go&logoColor=white&style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Open%20Source-Yes-brightgreen?style=for-the-badge&logo=github" />
+  <img src="https://img.shields.io/badge/Version-1.3_Beta-orange?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-blue?style=for-the-badge" />
 </div>
 
 
@@ -74,5 +75,6 @@ We welcome bug reports, feature requests, and pull requests! Please check our do
 *Streamlining your commit workflow, one AI-generated message at a time!*
 
 </div>
+
 
 
