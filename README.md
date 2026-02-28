@@ -1,14 +1,15 @@
+
+
 <div align="center">
   <img src="https://raw.githubusercontent.com/LunaSource/Luna/main/assets/img/banner2.png" alt="Luna" />
 
-  <br><br>
+<br><br>
 
   <img src="https://img.shields.io/badge/Made%20with-Go-00ADD8?logo=go&logoColor=white&style=for-the-badge" />
   <img src="https://img.shields.io/badge/Open%20Source-Yes-brightgreen?style=for-the-badge&logo=github" />
   <img src="https://img.shields.io/badge/Version-1.3_Beta-orange?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-blue?style=for-the-badge" />
 </div>
-
 
 ## Quick Start Guide
 
@@ -24,31 +25,32 @@
 > [!NOTE]
 > **Available Commands** - Comprehensive toolset for commit automation:
 
-| Command | Description | Usage |
-|---------|-------------|--------|
-| `help` | Display help information | `help` |
+| Command  | Description              | Usage                     |
+| -------- | ------------------------ | ------------------------- |
+| `help`   | Display help information | `help`                    |
 | `commit` | Generate commit messages | `commit -e` (with emojis) |
-| `apikey` | Set Gemini API key | `apikey YOUR_KEY` |
-| `config` | Manage configuration | `config` |
+| `apikey` | Set Gemini API key       | `apikey YOUR_KEY`         |
+| `config` | Manage configuration     | `config`                  |
 
 ## Key Features
 
 > [!IMPORTANT]
-> **AI-Powered Intelligence** - Luna analyzes your code changes and generates meaningful, descriptive commit messages that actually make sense.
+> **AI-Powered Intelligence** — Luna analyzes your code changes and generates meaningful, descriptive commit messages that actually make sense.
 
-- Smart Context Analysis: Understands your code changes and generates relevant commits
-- Lightning Fast: Utilizes Google Gemini 2.0 Flash for instant results
-- Professional Formatting: Creates conventional commit messages
-- Emoji Support: Optional emoji-enhanced commits for better visual tracking
-- Secure: Your API key is stored locally and securely
+* Smart Context Analysis: Understands your code changes and generates relevant commits
+* Lightning Fast: Currently utilizes Google Gemini 2.0 Flash for instant results *(will be discontinued soon)*
+* Future-Ready: Migration in progress to **OpenRouter models** for better stability and wider AI support
+* Professional Formatting: Creates conventional commit messages
+* Emoji Support: Optional emoji-enhanced commits for better visual tracking
+* Secure: Your API key is stored locally and securely
 
 ## Documentation
 
 > [!NOTE]
 > **Multi-language Support** - Choose your preferred language for detailed documentation:
 
-- **[Português (PT-BR)](docs/readme.pt-br.md)** - Documentação em Português
-- **[English (EN-US)](docs/readme.en-us.md)** - English Documentation
+* **[Português (PT-BR)](docs/readme.pt-br.md)** - Documentação em Português
+* **[English (EN-US)](docs/readme.en-us.md)** - English Documentation
 
 ## Configuration
 
@@ -75,7 +77,4 @@ We welcome bug reports, feature requests, and pull requests! Please check our do
 *Streamlining your commit workflow, one AI-generated message at a time!*
 
 </div>
-
-
-
 
