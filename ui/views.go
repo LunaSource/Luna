@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"time"
 
 	"luna/git"
@@ -9,38 +8,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func ShowHelp() {
-	fmt.Println(titleStyle.Render("Luna - AI Git Assistant"))
-	fmt.Println(`
-Available commands:
-
-help (h)
--> Shows this help screen
-
-commit (c)
--> Generates commit messages using Gemini AI
--> Use -e flag for emojis
-
-apikey (k)
--> Sets your Gemini API key
-
-config (cfg)
--> Manage project configuration
-`)
-}
-
-func ShowConfigHelp() {
-	fmt.Println(titleStyle.Render("Config Management"))
-	fmt.Println(`
-luna config init - Create project config
-luna config show - Show current config
-luna config edit - Edit project config
-
-Config Priority:
-• API Key: Global > Project > Default
- • Other settings: Project > Default
-`)
-}
 
 func loadFiles() tea.Msg {
 	files, err := git.GetStagedFiles()
