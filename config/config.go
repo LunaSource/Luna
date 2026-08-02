@@ -13,18 +13,13 @@ import (
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+
+	"luna/style"
 )
 
 const (
 	GLOBAL_CONFIG_FILE  = ".lunarc"
 	PROJECT_CONFIG_FILE = ".lunacfg"
-)
-
-var (
-	titleStyle    = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("63"))
-	itemStyle     = lipgloss.NewStyle().PaddingLeft(2)
-	selectedStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("42"))
 )
 
 type Config struct {
@@ -34,6 +29,7 @@ type Config struct {
 	MaxCommitLength int      `json:"maxCommitLength"`
 	DefaultEmoji    bool     `json:"defaultEmoji"`
 	ApiKey          string   `json:"apiKey"`
+	Model           string   `json:"model"`
 }
 
 type configItem struct {
@@ -54,6 +50,7 @@ func GetDefaultConfig() Config {
 		MaxCommitLength: 72,
 		DefaultEmoji:    false,
 		ApiKey:          "",
+		Model:           "",
 	}
 }
 
@@ -65,12 +62,22 @@ func LoadConfig() Config {
 		projectCfg.ApiKey = globalCfg.ApiKey
 	}
 
+	if projectCfg.Model == "" && globalCfg.Model != "" {
+		projectCfg.Model = globalCfg.Model
+	}
+
 	return projectCfg
 }
 
 func SaveGlobalApiKey(apiKey string) error {
 	globalCfg := LoadGlobalConfig()
 	globalCfg.ApiKey = apiKey
+	return SaveGlobalConfig(globalCfg)
+}
+
+func SaveGlobalModel(model string) error {
+	globalCfg := LoadGlobalConfig()
+	globalCfg.Model = model
 	return SaveGlobalConfig(globalCfg)
 }
 
@@ -83,7 +90,7 @@ func ManageConfig(subcmd string) {
 	case "edit":
 		editConfig()
 	default:
-		fmt.Println("Unknown config command")
+		fmt.Println(style.Err("Unknown config command"))
 	}
 }
 
@@ -96,7 +103,7 @@ func initConfigInteractive() {
 	}
 
 	l := list.New(items, list.NewDefaultDelegate(), 60, 14)
-	l.Title = "🗁 Select configuration files to create"
+	l.Title = style.IconFolderOpen + "  Select configuration files to create"
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
 
@@ -105,14 +112,14 @@ func initConfigInteractive() {
 
 	finalModel, err := p.Run()
 	if err != nil {
-		fmt.Printf("Error running config menu: %v\n", err)
+		fmt.Println(style.Err(fmt.Sprintf("Error running config menu: %v", err)))
 		return
 	}
 
 	m = finalModel.(model)
 
 	if contains(m.selected, "exit") || len(m.selected) == 0 {
-		fmt.Println("🚪 Exit without creating any files")
+		fmt.Println(style.Muted(style.IconSignOut + "  Exit without creating any files"))
 		return
 	}
 
@@ -126,18 +133,26 @@ func initConfigInteractive() {
 		switch sel {
 		case "project":
 			apiKey := askForAPIKey("project")
+			model := askForModel("project")
+			cfg := LoadProjectConfig()
 			if apiKey != "" {
-				cfg := LoadProjectConfig()
 				cfg.ApiKey = apiKey
-				SaveProjectConfig(cfg)
 			}
+			if model != "" {
+				cfg.Model = model
+			}
+			SaveProjectConfig(cfg)
 		case "global":
 			apiKey := askForAPIKey("global")
+			model := askForModel("global")
+			cfg := LoadGlobalConfig()
 			if apiKey != "" {
-				cfg := LoadGlobalConfig()
 				cfg.ApiKey = apiKey
-				SaveGlobalConfig(cfg)
 			}
+			if model != "" {
+				cfg.Model = model
+			}
+			SaveGlobalConfig(cfg)
 		}
 	}
 }
@@ -181,10 +196,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	var view strings.Builder
-	view.WriteString(titleStyle.Render(m.list.Title) + "\n\n")
+	view.WriteString(style.Accent(m.list.Title) + "\n\n")
 
 	if len(m.selected) > 0 {
-		view.WriteString("Selected: ")
+		view.WriteString(style.Accent("Selected: "))
 		for i, sel := range m.selected {
 			if i > 0 {
 				view.WriteString(", ")
@@ -202,7 +217,7 @@ func (m model) View() string {
 	for i, item := range m.list.Items() {
 		cfgItem := item.(configItem)
 		if i == m.list.Index() {
-			view.WriteString("→ ")
+			view.WriteString(style.Accent(style.IconAngleRight + " "))
 		} else {
 			view.WriteString("  ")
 		}
@@ -210,15 +225,19 @@ func (m model) View() string {
 		if contains(m.selected, cfgItem.value) ||
 			(cfgItem.value == "both" && len(m.selected) == 2) ||
 			(cfgItem.value == "exit" && len(m.selected) == 0) {
-			view.WriteString("(★) ")
+			view.WriteString(style.Accent("(" + style.IconStar + ") "))
 		} else {
-			view.WriteString("(☆) ")
+			view.WriteString(style.Muted("(" + style.IconStarEmpty + ") "))
 		}
 
 		view.WriteString(cfgItem.title + " - " + cfgItem.desc + "\n")
 	}
 
-	view.WriteString("\n↑↓: Navigate • Space: Select • Enter: Confirm • A: Select All • Q: Exit\n")
+	help := fmt.Sprintf(
+		"%s%s Navigate    Space Select    Enter Confirm    A Select All    Q Quit",
+		style.IconArrowUp, style.IconArrowDown,
+	)
+	view.WriteString("\n" + style.Muted(help) + "\n")
 	return view.String()
 }
 
@@ -236,12 +255,12 @@ func createProjectConfig() {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		cfg := GetDefaultConfig()
 		if err := SaveProjectConfig(cfg); err != nil {
-			fmt.Printf("Error creating .lunacfg: %v\n", err)
+			fmt.Println(style.Err(fmt.Sprintf("Error creating .lunacfg: %v", err)))
 			return
 		}
-		fmt.Println("🗸 Created .lunacfg in current directory")
+		fmt.Println(style.Success("Created .lunacfg in current directory"))
 	} else {
-		fmt.Println("🛈 .lunacfg already exists in current directory")
+		fmt.Println(style.Info(".lunacfg already exists in current directory"))
 	}
 }
 
@@ -250,17 +269,17 @@ func createGlobalConfig() {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		cfg := GetDefaultConfig()
 		if err := SaveGlobalConfig(cfg); err != nil {
-			fmt.Printf("Error creating .lunarc: %v\n", err)
+			fmt.Println(style.Err(fmt.Sprintf("Error creating .lunarc: %v", err)))
 			return
 		}
-		fmt.Println("🗸 Created .lunarc in home directory")
+		fmt.Println(style.Success("Created .lunarc in home directory"))
 	} else {
-		fmt.Println("🛈 .lunarc already exists in home directory")
+		fmt.Println(style.Info(".lunarc already exists in home directory"))
 	}
 }
 
 func askForAPIKey(configType string) string {
-	fmt.Printf("→ Set API key for %s? (Enter to skip or paste)\n", configType)
+	fmt.Println(style.Accent(fmt.Sprintf("%s  Set API key for %s? (Enter to skip or paste)", style.IconAngleRight, configType)))
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')
 	input = strings.TrimSpace(input)
@@ -269,6 +288,13 @@ func askForAPIKey(configType string) string {
 		return strings.TrimSpace(clip)
 	}
 	return input
+}
+
+func askForModel(configType string) string {
+	fmt.Println(style.Accent(fmt.Sprintf("%s  Set OpenRouter model for %s? (e.g. openai/gpt-4o-mini, Enter to skip)", style.IconAngleRight, configType)))
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	return strings.TrimSpace(input)
 }
 
 func contains(slice []string, item string) bool {
@@ -297,5 +323,5 @@ func showConfig() {
 }
 
 func editConfig() {
-	fmt.Println("Edit config functionality would be implemented here")
+	fmt.Println(style.Warn("Edit is not implemented yet"))
 }

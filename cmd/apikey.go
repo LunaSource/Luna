@@ -10,12 +10,13 @@ import (
 	"github.com/spf13/cobra"
 
 	"luna/config"
+	"luna/style"
 )
 
 // apikeyCmd represents the apikey command
 var apikeyCmd = &cobra.Command{
 	Use:   "apikey",
-	Short: "Register your ApiKey from Gemini.",
+	Short: "Register your OpenRouter API key.",
 	Aliases: []string{"key"},
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -25,11 +26,11 @@ var apikeyCmd = &cobra.Command{
 		var err error = config.SaveGlobalApiKey(apiKeyStr)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error saving API key: %v\n", err)
+			fmt.Fprintln(os.Stderr, style.Err(fmt.Sprintf("Error saving API key: %v", err)))
 			return
 		}
-		fmt.Println("✅ API key saved successfully in global configuration!")
-		fmt.Println("📍 Location: ~/.lunarc")
+		fmt.Println(style.Success("API key saved to global configuration"))
+		fmt.Println(style.Muted(style.IconMarker + "  ~/.lunarc"))
 
 	},
 }
