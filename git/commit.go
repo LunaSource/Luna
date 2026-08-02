@@ -6,22 +6,30 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+	"unicode"
 
 	"luna/ai"
 	"luna/config"
 )
 
-var emojis = []string{"✨", "🛠️", "🐛", "🔥", "📝", "🚀", "🔧", "🎨", "🔒", "💄"}
+// fallbackEmojis is only used when the AI call fails and we can't ask it
+// to pick an emoji that matches the commit's intent.
+var fallbackEmojis = []string{"✨", "🛠️", "🐛", "🔥", "📝", "🚀", "🔧", "🎨", "🔒", "💄"}
 
 func GenerateCommitMessage(apiKey, diff, filename string, cfg config.Config, includeEmoji bool) string {
-	commitMsg := ai.CallGemini(apiKey, diff)
+	commitMsg := ai.CallOpenRouter(apiKey, cfg.Model, diff, includeEmoji)
 	if commitMsg == "" {
 		commitMsg = "update " + filename
+		if includeEmoji {
+			rand.Seed(time.Now().UnixNano())
+			commitMsg = fallbackEmojis[rand.Intn(len(fallbackEmojis))] + " " + commitMsg
+		}
 	}
 
+	checkMsg := stripLeadingEmoji(commitMsg)
 	hasPrefix := false
 	for _, p := range cfg.CommitPrefixes {
-		if strings.HasPrefix(strings.ToLower(commitMsg), strings.ToLower(p)) {
+		if strings.HasPrefix(strings.ToLower(checkMsg), strings.ToLower(p)) {
 			hasPrefix = true
 			break
 		}
@@ -30,13 +38,7 @@ func GenerateCommitMessage(apiKey, diff, filename string, cfg config.Config, inc
 	if !hasPrefix && len(cfg.CommitPrefixes) > 0 {
 		rand.Seed(time.Now().UnixNano())
 		prefix := cfg.CommitPrefixes[rand.Intn(len(cfg.CommitPrefixes))]
-		commitMsg = prefix + " " + commitMsg
-	}
-
-	if includeEmoji {
-		rand.Seed(time.Now().UnixNano())
-		emoji := emojis[rand.Intn(len(emojis))]
-		commitMsg = fmt.Sprintf("%s %s", emoji, commitMsg)
+		commitMsg = insertPrefix(commitMsg, prefix)
 	}
 
 	if len(commitMsg) > cfg.MaxCommitLength {
@@ -44,6 +46,22 @@ func GenerateCommitMessage(apiKey, diff, filename string, cfg config.Config, inc
 	}
 
 	return commitMsg
+}
+
+// stripLeadingEmoji removes a leading emoji (and any surrounding spaces) so
+// the conventional-commit prefix can be detected right after it.
+func stripLeadingEmoji(s string) string {
+	return strings.TrimLeftFunc(s, func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	})
+}
+
+// insertPrefix adds the missing conventional-commit prefix right after any
+// leading emoji, so messages read "<emoji> <type>: <description>".
+func insertPrefix(msg, prefix string) string {
+	rest := stripLeadingEmoji(msg)
+	lead := strings.TrimSuffix(msg, rest)
+	return lead + prefix + " " + rest
 }
 
 func CommitFile(filename, commitMsg string) (string, error) {
