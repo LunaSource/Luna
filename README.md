@@ -17,8 +17,12 @@
 > **Get started in under 60 seconds!** Follow these three simple steps:
 
 1. **Install**: Download `bin/Luna.exe` and add to your system PATH
-2. **Setup**: Run `LunaApikey YOUR_GEMINI_API_KEY` to configure your API key
-3. **Use**: Execute `git add . && Luna commit` to generate your first AI commit!
+2. **Setup**: Run `Luna apikey YOUR_OPENROUTER_API_KEY` to configure your API key
+3. **Setup**: Run `Luna model MODEL_ID` (e.g. `openai/gpt-4o-mini`) to choose your model
+4. **Use**: Execute `Luna commit` inside a repo with changes — pick the files to stage and Luna generates and commits each one!
+
+> [!NOTE]
+> Luna's interface uses [Nerd Font](https://www.nerdfonts.com/) icons. Set your terminal font to a Nerd Font (e.g. FiraCode Nerd Font, JetBrainsMono NF) so they render correctly — otherwise they'll show as blank boxes.
 
 ## Command Reference
 
@@ -29,7 +33,8 @@
 | -------- | ------------------------ | ------------------------- |
 | `help`   | Display help information | `help`                    |
 | `commit` | Generate commit messages | `commit -e` (with emojis) |
-| `apikey` | Set Gemini API key       | `apikey YOUR_KEY`         |
+| `apikey` | Set OpenRouter API key    | `apikey YOUR_KEY`         |
+| `model`  | Set OpenRouter model      | `model MODEL_ID`          |
 | `config` | Manage configuration     | `config`                  |
 
 ## Key Features
@@ -38,8 +43,7 @@
 > **AI-Powered Intelligence** — Luna analyzes your code changes and generates meaningful, descriptive commit messages that actually make sense.
 
 * Smart Context Analysis: Understands your code changes and generates relevant commits
-* Lightning Fast: Currently utilizes Google Gemini 2.0 Flash for instant results *(will be discontinued soon)*
-* Future-Ready: Migration in progress to **OpenRouter models** for better stability and wider AI support
+* Powered by **OpenRouter**: bring your own API key and pick any model OpenRouter supports
 * Professional Formatting: Creates conventional commit messages
 * Emoji Support: Optional emoji-enhanced commits for better visual tracking
 * Secure: Your API key is stored locally and securely
@@ -51,15 +55,17 @@
 
 * **[Português (PT-BR)](docs/readme.pt-br.md)** - Documentação em Português
 * **[English (EN-US)](docs/readme.en-us.md)** - English Documentation
+* **[Español (ES-ES)](docs/readme.es-es.md)** - Documentación en Español
 
 ## Configuration
 
 > [!IMPORTANT]
 > **Easy Setup** - Get started in minutes:
 
-1. Obtain your Google Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+1. Obtain your API key from [OpenRouter](https://openrouter.ai/keys)
 2. Run `Luna apikey your_api_key_here` to set your credentials
-3. Start generating intelligent commits immediately!
+3. Run `Luna model your_chosen_model_id` to set which model to use (e.g. `openai/gpt-4o-mini`, `anthropic/claude-3.5-sonnet`)
+4. Start generating intelligent commits immediately!
 
 ## Contributing
 

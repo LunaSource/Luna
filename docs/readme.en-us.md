@@ -1,29 +1,32 @@
 # 🌙 Luna — AI Commit Generator
 
-Luna generates concise commit messages for your using Google Gemini 2.0 Flash API.
+Luna generates concise commit messages using the OpenRouter API, letting you bring your own key and pick any supported model.
 
 ## ✨ Features
 
-- **Per-file commits**: one commit for each staged file
-- **Gemini 2.0 Flash**: AI-powered summaries from file diffs
+- **Interactive file picker**: choose which changed files to stage, right from the TUI
+- **Per-file commits**: one commit for each selected file
+- **OpenRouter-powered**: AI summaries from file diffs, using the model you choose
 - **Conventional prefixes**: adds prefix if missing
+- **AI-picked emojis**: with `-e`, the model chooses a gitmoji-style emoji that matches the commit's intent
 - **Length control**: target < 60 chars, configurable max (default 72)
 - **Smart filtering**: ignores common binaries and images
-- **Optional emojis**: enable with `-e`
 
 ## How it works
 
-1. Collects staged files via `git diff --cached --name-only`
-2. Sends each diff to Gemini
-3. If response lacks known prefix, randomly selects from: `chore:`, `refactor:`, `feat:`, `fix:`, `docs:`, `test:`, `etc..`
-4. If `-e` is active, adds random emoji
-5. Truncates to `maxCommitLength` and commits with `git commit -m <message> -- <file>`
+1. Lists every changed file via `git status --porcelain` (modified, staged, untracked), minus ignored files
+2. You pick which files to include: `↑`/`↓` to move, `space` to select, `a` to select all, `enter` to confirm
+3. Stages the selected files (`git add`), then processes them one by one
+4. Sends each file's diff to the configured OpenRouter model
+5. If `-e` is active, the model prefixes the message with a matching emoji; if the response lacks a known prefix, one is randomly selected from: `chore:`, `refactor:`, `feat:`, `fix:`, `docs:`, `test:`, `etc..`
+6. Truncates to `maxCommitLength` and commits with `git commit -m <message> -- <file>`
 
 ## Requirements
 
 - Windows
 - Git installed and available in PATH
-- Google Gemini API key (`https://aistudio.google.com/app/apikey`)
+- OpenRouter API key (`https://openrouter.ai/keys`)
+- A [Nerd Font](https://www.nerdfonts.com/) set as your terminal font, so the interface icons render correctly
 
 ## Installation
 
@@ -56,7 +59,7 @@ Luna reads configuration from project and global files:
 
 Priority:
 
-- API key: Global → Project → Default
+- API key and model: Global → Project → Default
 - Other settings: Project → Default
 
 Default settings (from code):
@@ -66,23 +69,25 @@ Default settings (from code):
 - `maxCommitLength`: `72`
 - `defaultEmoji`: `false`
 
-### Set your API key
+### Set your API key and model
 
 ```bash
-$ Luna apikey YOUR_GEMINI_KEY
+$ Luna apikey YOUR_OPENROUTER_KEY
+$ Luna model openai/gpt-4o-mini
 ```
 
-This saves the key in your global `.lunarc`. Reopen terminal after setting.
+This saves the key and model in your global `.lunarc`. Reopen terminal after setting. Browse available models at [openrouter.ai/models](https://openrouter.ai/models).
 
 ## Usage
 
-Run Luna inside a Git repository with staged changes.
+Run Luna inside a Git repository with any changes (staged, unstaged or untracked) — you'll pick which files to stage from the TUI.
 
 ### Commands and aliases
 
 - `help` | `h`: Show help
 - `commit` | `c`: Generate and commit per-file messages
 - `apikey <YOUR_KEY>` | `k <YOUR_KEY>`: Set API key
+- `model <MODEL_ID>` | `m <MODEL_ID>`: Set OpenRouter model
 - `config` | `cfg` with subcommands:
   - `init`: Create `.lunacfg` in current directory
   - `show`: Print merged configuration
@@ -93,8 +98,10 @@ Run Luna inside a Git repository with staged changes.
 ### Typical flow
 
 ```bash
-$ git add . && Luna commit # or Luna c
+$ Luna commit # or Luna c
 ```
+
+Use `↑`/`↓` to move, `space` to select files, `a` to select all, `enter` to stage and commit them.
 
 ### Optional emojis
 
@@ -123,14 +130,16 @@ Committed README.md with message:
 
 ## Troubleshooting
 
-- Error: `Set API key using LunaApikey first`
+- Error: `Set API key using 'luna apikey' first`
   - Run `Luna apikey YOUR_KEY` and reopen terminal
+- Error: `Set model using 'luna model' first`
+  - Run `Luna model MODEL_ID` (see [openrouter.ai/models](https://openrouter.ai/models))
 - Error running Git commands
   - Ensure you're in a Git repository and Git is installed
-- No staged changes
-  - Run `git add .` or stage specific files
+- No changes found
+  - Nothing shows up in `git status`; modify or create a file first
 - API key not working
-  - Verify key is valid and has access to Gemini 2.0 Flash
+  - Verify key is valid and the selected model is accessible on your OpenRouter account
 
 ---
 
