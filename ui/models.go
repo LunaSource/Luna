@@ -13,47 +13,23 @@ import (
 
 	"luna/config"
 	"luna/git"
+	"luna/style"
 )
 
 var (
-	colorPrimary   = lipgloss.Color("#9d4edd")
-	colorSecondary = lipgloss.Color("#5a189a")
-	colorAccent    = lipgloss.Color("#00f5d4")
-	colorSuccess   = lipgloss.Color("#80ed99")
-	colorError     = lipgloss.Color("#ff4d6d")
-	// colorWarning   = lipgloss.Color("#f9c74f")
-	// colorText      = lipgloss.Color("#d8d8d8")
-
-	titleStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(colorAccent).
-			Background(colorSecondary).
-			Padding(0, 2)
-
-	boxStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(colorSecondary).
-			Padding(1, 2).
-			Margin(1)
-
-	statusSuccess = lipgloss.NewStyle().Foreground(colorSuccess)
-	statusError   = lipgloss.NewStyle().Foreground(colorError)
-	// statusWarning = lipgloss.NewStyle().Foreground(colorWarning)
-	// statusInfo    = lipgloss.NewStyle().Foreground(colorAccent)
-
 	asciiArt = `
- ██▓     █    ██  ███▄    █  ▄▄▄      
-▓██▒     ██  ▓██▒ ██ ▀█   █ ▒████▄    
-▒██░    ▓██  ▒██░▓██  ▀█ ██▒▒██  ▀█▄  
-▒██░    ▓▓█  ░██░▓██▒  ▐▌██▒░██▄▄▄▄██ 
+ ██▓     █    ██  ███▄    █  ▄▄▄
+▓██▒     ██  ▓██▒ ██ ▀█   █ ▒████▄
+▒██░    ▓██  ▒██░▓██  ▀█ ██▒▒██  ▀█▄
+▒██░    ▓▓█  ░██░▓██▒  ▐▌██▒░██▄▄▄▄██
 ░██████▒▒▒█████▓ ▒██░   ▓██░ ▓█   ▓██▒
 ░ ▒░▓  ░░▒▓▒ ▒ ▒ ░ ▒░   ▒ ▒  ▒▒   ▓▒█░
 ░ ░ ▒  ░░░▒░ ░ ░ ░ ░░   ░ ▒░  ▒   ▒▒ ░
-  ░ ░    ░░░ ░ ░    ░   ░ ░   ░   ▒   
+  ░ ░    ░░░ ░ ░    ░   ░ ░   ░   ▒
     ░  ░   ░              ░       ░  ░
-                                      
 
-made by: hax (github.com/i1lo)
+
+made by: hax (github.com/iuoz)
 `
 )
 
@@ -61,6 +37,8 @@ type uiState int
 
 const (
 	stateLoading uiState = iota
+	stateSelecting
+	stateStaging
 	stateProcessing
 	stateReview
 	stateComplete
@@ -70,6 +48,9 @@ const (
 type CommitUI struct {
 	cfg           config.Config
 	includeEmoji  bool
+	available     []git.FileStatus
+	selected      map[string]bool
+	cursor        int
 	files         []string
 	currentFile   int
 	commitMsgs    map[string]string
@@ -87,18 +68,22 @@ type fileProcessedMsg struct {
 	err      error
 }
 
-type loadedFilesMsg struct {
-	files []string
+type availableFilesMsg struct {
+	files []git.FileStatus
 	err   error
+}
+
+type stagedMsg struct {
+	err error
 }
 
 func InitializeCommitUI(cfg config.Config, includeEmoji bool) CommitUI {
 	sp := spinner.New()
 	sp.Spinner = spinner.Points
-	sp.Style = lipgloss.NewStyle().Foreground(colorAccent)
+	sp.Style = lipgloss.NewStyle().Foreground(style.ColorAccent)
 
 	prog := progress.New(
-		progress.WithSolidFill(string(colorPrimary)),
+		progress.WithSolidFill(string(style.ColorPrimary)),
 		progress.WithGradient("#7209b7", "#4361ee"),
 	)
 
@@ -107,6 +92,7 @@ func InitializeCommitUI(cfg config.Config, includeEmoji bool) CommitUI {
 	return CommitUI{
 		cfg:           cfg,
 		includeEmoji:  includeEmoji,
+		selected:      make(map[string]bool),
 		commitMsgs:    make(map[string]string),
 		commitResults: make(map[string]string),
 		spinner:       sp,
@@ -119,7 +105,7 @@ func InitializeCommitUI(cfg config.Config, includeEmoji bool) CommitUI {
 func (m CommitUI) Init() tea.Cmd {
 	return tea.Batch(
 		m.spinner.Tick,
-		loadFiles,
+		loadAvailableFiles(m.cfg),
 	)
 }
 
@@ -130,11 +116,14 @@ func (m CommitUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Type == tea.KeyCtrlC {
 			return m, tea.Quit
 		}
-		if m.state == stateReview {
+		switch m.state {
+		case stateSelecting:
+			return handleSelectionInput(m, msg)
+		case stateReview:
 			return handleReviewInput(m, msg)
 		}
 
-	case loadedFilesMsg:
+	case availableFilesMsg:
 		if msg.err != nil {
 			m.err = msg.err
 			m.state = stateError
@@ -144,7 +133,18 @@ func (m CommitUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.state = stateComplete
 			return m, tea.Quit
 		}
-		m.files = msg.files
+		m.available = msg.files
+		m.selected = make(map[string]bool)
+		m.cursor = 0
+		m.state = stateSelecting
+		return m, nil
+
+	case stagedMsg:
+		if msg.err != nil {
+			m.err = msg.err
+			m.state = stateError
+			return m, nil
+		}
 		m.state = stateProcessing
 		return m, processNextFile(m)
 
@@ -174,10 +174,6 @@ func processNextFile(m CommitUI) tea.Cmd {
 	file := m.files[m.currentFile]
 
 	return func() tea.Msg {
-		if git.ShouldIgnoreFile(file, m.cfg) {
-			return fileProcessedMsg{filename: file, result: "Ignored", err: nil}
-		}
-
 		diff, err := git.GetFileDiff(file)
 		if err != nil {
 			return fileProcessedMsg{filename: file, result: "", err: err}
@@ -205,57 +201,112 @@ func (m CommitUI) View() string {
 	var b strings.Builder
 
 	now := time.Now().Format("15:04:05")
-	header := titleStyle.Render(" Luna Commits  •  " + now)
+	header := style.TitleStyle.Render(style.IconMoon + "  Luna Commits  " + style.IconAngleRight + "  " + now)
 
 	switch m.state {
 
 	case stateLoading:
 		b.WriteString(header + "\n")
-		b.WriteString(boxStyle.Render(m.spinner.View() + " Loading files..."))
+		b.WriteString(style.BoxStyle.Render(m.spinner.View() + "  Loading available files..."))
+
+	case stateSelecting:
+		var list strings.Builder
+		for i, f := range m.available {
+			cursor := "  "
+			if i == m.cursor {
+				cursor = style.Accent(style.IconAngleRight + " ")
+			}
+
+			box := style.Muted(style.IconSquare)
+			if m.selected[f.Path] {
+				box = style.SuccessStyle.Render(style.IconCheckSquare)
+			}
+
+			badge := strings.TrimSpace(f.Status)
+			if badge == "" {
+				badge = "??"
+			}
+
+			list.WriteString(fmt.Sprintf("%s%s  %s  %s\n", cursor, box, style.Muted(badge), f.Path))
+		}
+
+		selectedCount := 0
+		for _, v := range m.selected {
+			if v {
+				selectedCount++
+			}
+		}
+
+		help := style.Muted(fmt.Sprintf(
+			"%s%s move   space select   a all   enter stage & commit (%d selected)   q quit",
+			style.IconArrowUp, style.IconArrowDown, selectedCount,
+		))
+
+		body := fmt.Sprintf(
+			"%s\n%s\n\n%s",
+			style.Muted("Select files to stage and commit"),
+			list.String(),
+			help,
+		)
+
+		b.WriteString(header + "\n")
+		b.WriteString(style.BoxStyle.Render(body))
+
+	case stateStaging:
+		b.WriteString(header + "\n")
+		b.WriteString(style.BoxStyle.Render(m.spinner.View() + "  Staging selected files..."))
 
 	case stateProcessing:
 		progressVal := float64(m.currentFile) / float64(len(m.files))
 		box := fmt.Sprintf(
-			"%s Processing...\n\nProgress:\n%s\n\nCurrent file:\n%s",
+			"%s  Processing\n\n%s\n%s\n\n%s\n%s",
 			m.spinner.View(),
+			style.Muted("Progress"),
 			m.progress.ViewAs(progressVal),
-			lipgloss.NewStyle().Foreground(colorAccent).Render(m.files[m.currentFile]),
+			style.Muted("Current file"),
+			style.AccentStyle.Render(m.files[m.currentFile]),
 		)
 
 		b.WriteString(header + "\n")
-		b.WriteString(boxStyle.Render(box))
+		b.WriteString(style.BoxStyle.Render(box))
 
 	case stateReview:
 		file := m.files[m.currentFile]
 		msg := m.commitMsgs[file]
 		result := m.commitResults[file]
 
-		icon := statusSuccess.Render("✓")
+		icon := style.SuccessStyle.Render(style.IconCheck)
 		if strings.Contains(result, "Error") {
-			icon = statusError.Render("✗")
+			icon = style.ErrorStyle.Render(style.IconCross)
 		}
 
+		hints := style.Muted(fmt.Sprintf(
+			"%s c  confirm    %s r  retry    %s q  quit",
+			style.IconCheck, style.IconRefresh, style.IconCross,
+		))
+
 		body := fmt.Sprintf(
-			"%s\n%s\n\nFile: %s\n\nCommit message:\n%s\n\nStatus: %s\n\n[c] Confirm   [r] Retry   [q] Quit",
+			"%s\n%s\n\n%s  %s\n\nCommit message:\n%s\n\nStatus: %s  %s\n\n%s",
 			asciiArt,
-			titleStyle.Render("Repository: github.com/LunaSource/Luna"),
-			lipgloss.NewStyle().Bold(true).Foreground(colorAccent).Render(file),
+			style.TitleStyle.Render(style.IconMoon+"  github.com/LunaSource/Luna"),
+			style.Muted("File"),
+			style.AccentStyle.Render(file),
 			msg,
-			icon+" "+result,
+			icon, result,
+			hints,
 		)
 
 		b.WriteString(header + "\n")
-		b.WriteString(boxStyle.Render(body))
+		b.WriteString(style.BoxStyle.Render(body))
 
 	case stateComplete:
 		b.WriteString(header + "\n")
-		b.WriteString(statusSuccess.Render("All commits completed."))
+		b.WriteString(style.SuccessStyle.Render(style.IconRocket + "  All commits completed."))
 
 	case stateError:
 		b.WriteString(header + "\n")
-		b.WriteString(statusError.Render(fmt.Sprintf("Error: %v", m.err)))
+		b.WriteString(style.Err(fmt.Sprintf("Error: %v", m.err)))
 	}
 
 	return b.String()
 }
-

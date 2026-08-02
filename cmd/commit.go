@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"luna/config"
+	"luna/style"
 	"luna/ui"
 )
 
@@ -16,7 +17,7 @@ var cfg = config.LoadConfig()
 
 var commitCmd = &cobra.Command{
 	Use:   "commit",
-	Short: "Generates commit messages using Gemini AI.",
+	Short: "Generates commit messages using OpenRouter AI.",
 	Aliases: []string{"c"},
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -26,7 +27,12 @@ var commitCmd = &cobra.Command{
 		}
 
 		if cfg.ApiKey == "" {
-			fmt.Println("Error: Set API key using 'luna apikey' first")
+			fmt.Println(style.Err("Set your API key first: luna apikey <KEY>"))
+			return
+		}
+
+		if cfg.Model == "" {
+			fmt.Println(style.Err("Set your model first: luna model <MODEL_ID>"))
 			return
 		}
 
@@ -35,7 +41,7 @@ var commitCmd = &cobra.Command{
 		p = tea.NewProgram(ui.InitializeCommitUI(cfg, includeEmoji))
 
 		if _, err := p.Run(); err != nil {
-			fmt.Printf("Error running UI: %v\n", err)
+			fmt.Println(style.Err(fmt.Sprintf("Error running UI: %v", err)))
 			os.Exit(1)
 		}
 	},
